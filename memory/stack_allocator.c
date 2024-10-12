@@ -49,6 +49,20 @@ void* MEM_stack_allocator_alloc(MEM_Stack_Allocator* allocator, size_t size){
   return new_top->start;
 }
 
+bool MEM_stack_allocator_realloc(MEM_Stack_Allocator* allocator, void* ptr, size_t new_size){
+  if(allocator == NULL || ptr == NULL || allocator->base == NULL || allocator->top == NULL){
+    return false;
+  }
+  if(ptr != allocator->top->start ){
+    return false;
+  }
+  if((char*)ptr + new_size > (char*)allocator->base + allocator->stack_size ){
+    return false;
+  }
+  allocator->top->size = new_size;
+  return true;
+}
+
 bool MEM_stack_allocator_free(MEM_Stack_Allocator* allocator, void* ptr){
   if(allocator == NULL || ptr == NULL || allocator->top == NULL){
     return false;

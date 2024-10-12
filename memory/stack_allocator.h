@@ -21,6 +21,8 @@ MEM_Stack_Allocator MEM_stack_allocator_init(size_t size);
 
 void* MEM_stack_allocator_alloc(MEM_Stack_Allocator* allocator, size_t size);
 
+bool MEM_stack_allocator_realloc(MEM_Stack_Allocator* allocator, void* ptr, size_t new_size);
+
 bool MEM_stack_allocator_free(MEM_Stack_Allocator* allocator, void* ptr);
 
 bool MEM_stack_allocator_destroy(MEM_Stack_Allocator* allocator);
