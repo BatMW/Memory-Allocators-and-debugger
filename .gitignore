@@ -1,0 +1,13 @@
+#ignore executables
+*.out
+*.exe
+
+#ignore object files
+*.o
+*.ko
+*.obj
+*.elf
+
+#precompiled headers
+*.gch
+*pch
