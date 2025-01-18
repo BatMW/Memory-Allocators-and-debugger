@@ -32,5 +32,8 @@ void MEM_ring_block_allocator_free(MEM_Ring_Block_Allocator* allocator, void* bl
  * Deallocates base and sets all pointers to NULL.
 */
 void MEM_ring_block_allocator_destroy(MEM_Ring_Block_Allocator* allocator);
+#ifdef UNITY_BUILD
+#include "ring_allocator.c"
+#endif //UNITY_BUILD
 
 #endif

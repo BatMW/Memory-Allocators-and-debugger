@@ -31,4 +31,8 @@ void MEM_reset_allocator_reset(MEM_Reset_Allocator* allocator);
  * Frees all memory and sets all pointers to NULL.
 */
 void MEM_reset_allocator_destroy(MEM_Reset_Allocator* allocator);
+
+#ifdef UNITY_BUILD
+#include "reset_allocator.c"
+#endif //UNITY_BUILD
 #endif

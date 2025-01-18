@@ -138,7 +138,7 @@ void test_pool_allocator(void){
 void test_stack_allocator(void){
   printf("Starting stack allocator test...\n");
   MEM_Stack_Allocator allocator = MEM_stack_allocator_init(1024*1024); //1 MiB 
-  assert(allocator.start != NULL);
+  assert(allocator.base != NULL);
 
 
 
@@ -150,5 +150,6 @@ int main(void){
   test_reset_allocator();
   test_ring_allocator();
   test_pool_allocator();
+  test_stack_allocator();
   return 0;
 }

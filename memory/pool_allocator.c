@@ -25,7 +25,10 @@ MEM_Pool_Allocator MEM_pool_allocator_init(size_t block_size, size_t nr_blocks){
   if(allocator.base == NULL)return allocator;
 
   allocator.start = aligned_alloc(block_size, block_size*nr_blocks);
-  if(allocator.start == NULL)return allocator;
+  if(allocator.start == NULL){
+    free(allocator.base);
+    return allocator;
+  }
   allocator.block_size = block_size;
   allocator.nr_blocks = nr_blocks;
 

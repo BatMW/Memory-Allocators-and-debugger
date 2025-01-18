@@ -26,5 +26,8 @@ bool MEM_stack_allocator_realloc(MEM_Stack_Allocator* allocator, void* ptr, size
 bool MEM_stack_allocator_free(MEM_Stack_Allocator* allocator, void* ptr);
 
 bool MEM_stack_allocator_destroy(MEM_Stack_Allocator* allocator);
+#ifdef UNITY_BUILD
+#include "stack_allocator.c"
+#endif //UNITY_BUILD
 
 #endif

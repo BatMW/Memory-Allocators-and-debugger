@@ -18,4 +18,7 @@ bool MEM_pool_allocator_free(MEM_Pool_Allocator* allocator, void* ptr);
 
 bool MEM_pool_allocator_destroy(MEM_Pool_Allocator* allocator);
 
-#endif
+#ifdef UNITY_BUILD
+#include "pool_allocator.c"
+#endif //UNITY_BUILD
+#endif // MEM_POOL_ALLOCATOR
