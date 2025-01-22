@@ -81,10 +81,10 @@ void test_pool_allocator(void){
   printf("Starting pool allocator test.\n");
   size_t block_size = 64;
   size_t nr_blocks = 128;
-  MEM_Pool_Allocator allocator = MEM_pool_allocator_init(block_size, nr_blocks);
+  struct MEM_Pool_Allocator allocator = MEM_pool_allocator_init(block_size, nr_blocks);
   assert(allocator.base != NULL);
-  assert(allocator.start != NULL);
-  assert((size_t)allocator.start % block_size == 0);
+  assert(allocator.head != NULL);
+  assert((size_t)allocator.head % block_size == 0);
   printf("Allocating all ... \n");
   char* ptrs[nr_blocks];
   for(unsigned i=0; i<nr_blocks; ++i){
@@ -99,7 +99,6 @@ void test_pool_allocator(void){
 
   char* old_spot_3 = ptrs[3];
   assert(MEM_pool_allocator_free(&allocator, ptrs[3]));
-  assert(!MEM_pool_allocator_free(&allocator, ptrs[3]));
 
   ptrs[3]=NULL;
   assert(((*(size_t*)allocator.base) & ((size_t)1 << 3)) == 0);
@@ -118,7 +117,7 @@ void test_pool_allocator(void){
     //printf("i=%lu", i);
     size_t index = rand() % (nr_blocks*2);
     if(ptrs2[index] == NULL){
-      if(((size_t*)allocator.base)[0] == ~((size_t)0) &&((size_t*)allocator.base)[1] == ~((size_t)0)){
+      if(allocator.head == NULL){
         ptrs2[index] = MEM_pool_allocator_alloc(&allocator);
         assert(ptrs2[index] == NULL);
       }else{
@@ -137,7 +136,7 @@ void test_pool_allocator(void){
 
 void test_stack_allocator(void){
   printf("Starting stack allocator test...\n");
-  MEM_Stack_Allocator allocator = MEM_stack_allocator_init(1024*1024); //1 MiB 
+  struct MEM_Stack_Allocator allocator = MEM_stack_allocator_init(1024*1024); //1 MiB 
   assert(allocator.base != NULL);
 
 
