@@ -12,6 +12,7 @@ struct MEM_Pool_Allocator MEM_pool_allocator_init(size_t block_size, size_t nr_b
   struct MEM_Pool_Allocator allocator = {};
   #ifdef MEM_DBG
     printf("MEM_pool_allocator_init: block size: %lu, nr blocks: %lu\n", block_size, nr_blocks);
+
   #endif
   if(!(block_size > sizeof(struct MEM_Pool_Memory_Block)))return allocator;
   if((block_size & (block_size-1)) != 0)return allocator;
@@ -33,26 +34,14 @@ struct MEM_Pool_Allocator MEM_pool_allocator_init(size_t block_size, size_t nr_b
     block_ptr = block_ptr->next;
   }
   block_ptr->next = NULL;
-  #ifdef MEM_DBG
-    struct MEM_Pool_Memory_Block* checker = allocator.head;
-    int sum=0;
-    while(true){
-      if(checker == NULL){
-        break;
-      }
-      assert((size_t)checker % allocator.block_size == 0);
-      size_t block_idx = ((size_t)checker - (size_t)allocator.base)/allocator.block_size;
-      size_t next_idx = ((size_t)checker->next - (size_t)allocator.base)/allocator.block_size;
-      printf("[%lu]->[%lu]: %lu\n", block_idx, next_idx, (size_t)checker->next);
-      checker = checker->next;
-      sum++;
-    }
-    printf("sum of blocks: %d\n", sum);
-  #endif
   return allocator;
 }
 
 void* MEM_pool_allocator_alloc(struct MEM_Pool_Allocator* allocator){
+  #ifdef MEM_DBG
+    assert(allocator != NULL);
+    assert(!(allocator->base == NULL));
+  #endif
   if(allocator == NULL)return NULL;
   if(allocator->base == NULL || allocator->head == NULL)return NULL;
   void* ret = (void*)allocator->head;
@@ -61,11 +50,16 @@ void* MEM_pool_allocator_alloc(struct MEM_Pool_Allocator* allocator){
 }
 
 bool MEM_pool_allocator_free(struct MEM_Pool_Allocator* allocator, void* ptr){
+  #ifdef MEM_DBG
+    assert(allocator != NULL);
+    assert(!(allocator->base == NULL));
+    assert(!((size_t)ptr > (size_t)((size_t)allocator->base + (allocator->nr_blocks*allocator->block_size))));
+    assert(!((size_t)ptr % allocator->block_size != 0));
+  #endif
   if(allocator == NULL)return false;
   if(allocator->base == NULL)return false;
-  if((char*)ptr < allocator->base || (size_t)ptr > (size_t)(allocator->base + (allocator->nr_blocks*allocator->block_size))) return false;
-  if((size_t)ptr % allocator->block_size != 0) return false;
- 
+  if ((char*)ptr < allocator->base || (char*)ptr >= (allocator->base + (allocator->nr_blocks * allocator->block_size))) return false;
+  if ((size_t)ptr % allocator->block_size != 0) return false;
   struct MEM_Pool_Memory_Block* insert = (struct MEM_Pool_Memory_Block*)ptr;
   insert->next = allocator->head;
   allocator->head = insert;
