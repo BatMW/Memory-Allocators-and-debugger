@@ -18,7 +18,7 @@ MEM_Reset_Allocator MEM_reset_allocator_init(size_t size){
  * Returns NULL if unsuccessful.
 */
 void* MEM_reset_allocator_alloc(MEM_Reset_Allocator* allocator, size_t size){
-  if(allocator == NULL){
+  if(allocator == NULL || size == 0){
     return NULL;
   }else if(allocator->base == NULL){
     return NULL;
@@ -28,6 +28,29 @@ void* MEM_reset_allocator_alloc(MEM_Reset_Allocator* allocator, size_t size){
   }
   void* ret = allocator->top;
   allocator->top = (char*)allocator->top + size;
+  return ret;
+}
+
+/*
+ * Tries to allocate 'size' bytes of aligned memory.
+ * Returns NULL if unsuccessful.
+*/
+void* MEM_reset_allocator_aligned_alloc(MEM_Reset_Allocator* allocator, size_t size, size_t align){
+  if(allocator == NULL || size == 0 || align == 0 || allocator->base == NULL){
+    return NULL;
+  }
+
+  uintptr_t raw_top = (uintptr_t)allocator->top;
+  uintptr_t aligned_top = (raw_top + align - 1) & ~(uintptr_t)(align - 1);
+
+  size_t total_used = aligned_top - (uintptr_t)allocator->base + size;
+  if (total_used > allocator->size) {
+    allocator->failed_allocs++;
+    return NULL;
+  }
+
+  void* ret = (void*)aligned_top;
+  allocator->top = (void*)(aligned_top + size);
   return ret;
 }
 

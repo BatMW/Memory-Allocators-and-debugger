@@ -20,7 +20,7 @@ MEM_Stack_Allocator MEM_stack_allocator_init(size_t size){
 }
 
 void* MEM_stack_allocator_alloc(MEM_Stack_Allocator* allocator, size_t size){
-  if(allocator == NULL && size > 0){
+  if(allocator == NULL || size == 0){
     return NULL;
   }
   if(allocator->top == NULL){
@@ -47,6 +47,57 @@ void* MEM_stack_allocator_alloc(MEM_Stack_Allocator* allocator, size_t size){
   new_top->start = (void*)(new_top+1);
   allocator->top = new_top;
   return new_top->start;
+}
+
+void* MEM_stack_allocator_aligned_alloc(MEM_Stack_Allocator* allocator, size_t size, size_t align) {
+  if (allocator == NULL || size == 0 || align == 0) {
+    return NULL;
+  }
+
+  char* base = (char*)allocator->base;
+  char* end_of_stack = base + allocator->stack_size;
+
+  MEM_Stack_Frame* new_top = NULL;
+  void* raw_mem = NULL;
+  void* aligned_ptr = NULL;
+  size_t padding = 0;
+
+  if (allocator->top == NULL) {
+    // First allocation
+    new_top = (MEM_Stack_Frame*)allocator->base;
+    raw_mem = (void*)(new_top + 1);
+    aligned_ptr = align_address(raw_mem, align);
+    padding = (size_t)((uintptr_t)aligned_ptr - (uintptr_t)raw_mem);
+
+    size_t total_needed = sizeof(MEM_Stack_Frame) + padding + size;
+    if ((size_t)(end_of_stack - (char*)new_top) < total_needed) {
+      return NULL;
+    }
+
+    new_top->size = padding + size;
+    new_top->previous = NULL;
+    new_top->start = aligned_ptr;
+    allocator->top = new_top;
+    return aligned_ptr;
+  }
+
+  // Subsequent allocations
+  char* next_frame_pos = (char*)allocator->top + sizeof(MEM_Stack_Frame) + allocator->top->size;
+  new_top = (MEM_Stack_Frame*)next_frame_pos;
+  raw_mem = (void*)(new_top + 1);
+  aligned_ptr = align_address(raw_mem, align);
+  padding = (size_t)((uintptr_t)aligned_ptr - (uintptr_t)raw_mem);
+
+  size_t total_needed = sizeof(MEM_Stack_Frame) + padding + size;
+  if ((size_t)(end_of_stack - (char*)new_top) < total_needed) {
+    return NULL;
+  }
+
+  new_top->size = padding + size;
+  new_top->previous = allocator->top;
+  new_top->start = aligned_ptr;
+  allocator->top = new_top;
+  return aligned_ptr;
 }
 
 bool MEM_stack_allocator_realloc(MEM_Stack_Allocator* allocator, void* ptr, size_t new_size){
