@@ -33,45 +33,37 @@ void test_reset_allocator(void){
 
 void test_ring_allocator(void){
   printf("Starting ring allocator test.\n");
-  size_t block_size = 31;
+  size_t block_size = 32;
   size_t nr_blocks = 4;
   MEM_Ring_Block_Allocator allocator = MEM_ring_block_allocator_init(block_size, nr_blocks);
   assert(allocator.base != NULL);
 
   char* alloc0 = (char*)MEM_ring_block_allocator_alloc(&allocator);
-  assert(alloc0-1 == allocator.base);
-  assert(*(bool*)(alloc0-1) == true);
+  assert(alloc0 == allocator.base);
 
   char* alloc1 = (char*)MEM_ring_block_allocator_alloc(&allocator);
   assert(alloc1 != NULL);
-  assert(*(bool*)(alloc1-1) == true);
-
 
   char* alloc2 = (char*)MEM_ring_block_allocator_alloc(&allocator);
   assert(alloc2 != NULL);
-  assert(*(bool*)(alloc2-1) == true);
 
   char* alloc3 = (char*)MEM_ring_block_allocator_alloc(&allocator);
   assert(alloc3 != NULL);
-  assert(*(bool*)(alloc0-1) == true);
 
   char* alloc4 = (char*)MEM_ring_block_allocator_alloc(&allocator);
   assert(alloc4 == NULL); //Full buffer
 
-  MEM_ring_block_allocator_free(&allocator, alloc2);
-  assert(*(bool*)(alloc2-1) == false);
-  assert(allocator.tail == allocator.base);
+  MEM_ring_block_allocator_free(&allocator, alloc0);
+  assert(allocator.tail == 1);
 
   MEM_ring_block_allocator_free(&allocator, alloc1);
-  assert(*(bool*)(alloc1-1) == false);
-  assert(allocator.tail == alloc0-1);
+  assert(allocator.tail == 2);
 
-  MEM_ring_block_allocator_free(&allocator, alloc0);
-  assert(*(bool*)(alloc0-1) == false);
-  assert(allocator.tail == alloc3-1);
+  MEM_ring_block_allocator_free(&allocator, alloc2);
+  assert(allocator.tail == 3);
 
   alloc4 = (char*)MEM_ring_block_allocator_alloc(&allocator);
-  assert(alloc4-1 == allocator.base);
+  assert(alloc4 == allocator.base);
   //printf("alloc4ptr: %p , baseptr: %p \n", (void*)(alloc4-1), allocator.base);
   MEM_ring_block_allocator_destroy(&allocator);
   printf("Ring allocator test done.\n");
@@ -128,7 +120,7 @@ void test_pool_allocator(void){
     assert(MEM_pool_allocator_free(&allocator, ptrs[i]));
     ptrs[i] = NULL;
   }
-  assert(check_ll(&allocator) == nr_blocks);
+  assert((size_t)check_ll(&allocator) == nr_blocks);
 
   char* ptrs2[nr_blocks*2] = {};
   printf("Randomly alloc/dealloc ... \n");
@@ -150,11 +142,11 @@ void test_pool_allocator(void){
     }
   }
   printf("Freeing all ...\n");
-  for(int i=0; i<nr_blocks*2; ++i){
+  for(size_t i=0; i<nr_blocks*2; ++i){
     MEM_pool_allocator_free(&allocator, ptrs2[i]);
     ptrs2[i] = NULL;
   }
-   assert(check_ll(&allocator) == nr_blocks);
+   assert((size_t)check_ll(&allocator) == nr_blocks);
   assert(MEM_pool_allocator_destroy(&allocator));
   printf("Pool allocator test done.\n");
 }

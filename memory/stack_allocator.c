@@ -37,7 +37,7 @@ void* MEM_stack_allocator_alloc(MEM_Stack_Allocator* allocator, size_t size){
   }
   char* end_of_stack = (char*)allocator->base + allocator->stack_size;
   char* next_frame_position = (char*)allocator->top + allocator->top->size + sizeof(MEM_Stack_Frame);
-  if(end_of_stack - next_frame_position < size + sizeof(MEM_Stack_Frame)){
+  if((size_t)(end_of_stack - next_frame_position) < size + sizeof(MEM_Stack_Frame)){
     return NULL;
   }
 

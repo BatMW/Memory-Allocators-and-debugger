@@ -1,18 +1,22 @@
 #ifndef MEM_RING_ALLOCATOR
 #define MEM_RING_ALLOCATOR
 #include "stddef.h"
+#include "stdbool.h"
 
 typedef struct MEM_Ring_Block_Allocator{
-  void* base;
-  void* head;
-  void* tail;
+  char* base;
+  size_t head;
+  size_t tail;
   size_t block_size;
   size_t nr_blocks;
+  bool full;
 } MEM_Ring_Block_Allocator;
 
 /*
- * Allocates a structure of (block_size+1)*nr_blocks bytes to the base pointer.
+ * Allocates a structure of (block_size)*nr_blocks bytes to the base pointer.
  * All pointers are NULL if allocation fails.
+ * nr_blocks must be a power of 2
+ * block_size must be a multiple of sizeof(void)
 */
 MEM_Ring_Block_Allocator MEM_ring_block_allocator_init(size_t block_size, size_t nr_blocks);
 

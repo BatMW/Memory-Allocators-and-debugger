@@ -28,7 +28,7 @@ struct MEM_Pool_Allocator MEM_pool_allocator_init(size_t block_size, size_t nr_b
 
   char* block_iterator = allocator.base + block_size;
   struct MEM_Pool_Memory_Block* block_ptr = allocator.head;
-  for(int i=0; i<nr_blocks-1; ++i){
+  for(size_t i=0; i<nr_blocks-1; ++i){
     block_ptr->next = (struct MEM_Pool_Memory_Block*)block_iterator;
     block_iterator += block_size;
     block_ptr = block_ptr->next;
