@@ -1,12 +1,17 @@
+#define _GNU_SOURCE
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "time.h"
 #include "stdbool.h"
+#include <string.h>
 #include "ring_allocator.h"
 #include "reset_allocator.h"
 #include "assert.h"
 #include "pool_allocator.h"
 #include "stack_allocator.h"
+#include "page_ring_buffer.h"
+
 void test_reset_allocator(void){
   printf("Starting reset allocator test.\n");
   size_t alloc_size = 1024;
@@ -162,10 +167,34 @@ void test_stack_allocator(void){
   printf("Stack allocator test done.\n");
 }
 
+void test_page_ring_buffer(void){
+  printf("Starting page ring buffer test.\n");
+  MEM_Page_Ring_Buffer buf;
+  buf = MEM_page_ring_buffer_init(1);
+  assert(buf.base != NULL);
+  assert(buf.start != NULL);
+  assert(buf.start == buf.base + buf.p_size);
+  printf("Page size: %lu\n", buf.page_size);
+  char* b = (char*)buf.start;
+  memset(b, 0, buf.p_size);
+  assert(b[-1] == 0);
+
+  char* str = "0123456789";
+  strncpy(b + buf.p_size -3, str, 10);
+  printf("Content of b-3: %s\n", b-3);
+  printf("Content of b + buf.p_size -3: %s\n", b + buf.p_size -3);
+  assert(strcmp(b-3, b + buf.p_size -3) == 0);
+
+
+  printf("Page ring buffer test done.\n");
+}
+
+
 int main(void){
   test_reset_allocator();
   test_ring_allocator();
   test_pool_allocator();
   test_stack_allocator();
+  test_page_ring_buffer();
   return 0;
 }
