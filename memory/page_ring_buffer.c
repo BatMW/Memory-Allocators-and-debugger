@@ -6,6 +6,7 @@
 #else
 #include <sys/mman.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
 #endif
