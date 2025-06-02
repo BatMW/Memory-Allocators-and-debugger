@@ -4,6 +4,14 @@
 #include "stdint.h"
 #include "assert.h"
 
+#if defined(_WIN32)
+  #include <malloc.h>
+  #define aligned_alloc(size, alignment) _aligned_malloc(size, alignment)
+  #define aligned_free(ptr) _aligned_free(ptr)
+#else
+  #include <stdlib.h>
+  #define aligned_free(ptr) free(ptr)
+#endif
 /*
  * Allocates a structure of block_size*nr_blocks bytes to the base pointer.
  * All pointers are NULL if allocation fails.
@@ -72,10 +80,11 @@ void MEM_ring_block_allocator_destroy(MEM_Ring_Block_Allocator* allocator){
   }else if (allocator->base == NULL){
     return;
   }
-  free(allocator->base);
+  aligned_free(allocator->base);
   allocator->base = NULL;
   allocator->tail = 0;
   allocator->head = 0;
   allocator->block_size = 0;
   allocator->nr_blocks = 0;
 }
+

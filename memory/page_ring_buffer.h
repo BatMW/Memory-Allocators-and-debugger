@@ -2,6 +2,7 @@
 #define MEM_PAGE_RING_BUFFER
 #define _GNU_SOURCE
 #if defined(_WIN32)
+//#define _WIN32_WINNT 0x0A00
 #include <windows.h>
 #else
 #define _GNU_SOURCE
@@ -17,6 +18,9 @@ typedef struct MEM_Page_Ring_Buffer{
   size_t p_size; //physical size
   size_t v_size; //virtual size
   size_t page_size;
+#if defined (_WIN32)
+  HANDLE hMap;
+#endif
 }MEM_Page_Ring_Buffer;
 
 MEM_Page_Ring_Buffer MEM_page_ring_buffer_init(size_t physical_nr_pages);

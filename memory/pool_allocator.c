@@ -8,6 +8,15 @@
   #include "assert.h"
 #endif
 
+#if defined(_WIN32)
+  #include <malloc.h>
+  #define aligned_alloc(size, alignment) _aligned_malloc(size, alignment)
+  #define aligned_free(ptr) _aligned_free(ptr)
+#else
+  #include <stdlib.h>
+  #define aligned_free(ptr) free(ptr)
+#endif
+
 struct MEM_Pool_Allocator MEM_pool_allocator_init(size_t block_size, size_t nr_blocks){
   struct MEM_Pool_Allocator allocator = {};
   #ifdef MEM_DBG

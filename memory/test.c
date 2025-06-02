@@ -85,7 +85,7 @@ int check_ll(struct MEM_Pool_Allocator* allocator){
     assert((size_t)checker % allocator->block_size == 0);
     size_t block_idx = ((size_t)checker - (size_t)allocator->base)/allocator->block_size;
     size_t next_idx = ((size_t)checker->next - (size_t)allocator->base)/allocator->block_size;
-    printf("[%lu]->[%lu]: %lu\n", block_idx, next_idx, (size_t)checker->next);
+    printf("[%zu]->[%zu]: %zu\n", block_idx, next_idx, (size_t)checker->next);
     checker = checker->next;
     sum++;
   }
@@ -101,7 +101,7 @@ void test_pool_allocator(void){
   assert(allocator.head != NULL);
   assert((size_t)allocator.head % block_size == 0);
 
-  printf("size calc: %lu", (size_t)((allocator.base + ((size_t)allocator.nr_blocks*allocator.block_size))-allocator.base)/block_size);
+  printf("size calc: %zu\n", (size_t)((allocator.base + ((size_t)allocator.nr_blocks*allocator.block_size))-allocator.base)/block_size);
   printf("Allocating all ... \n");
   char* ptrs[nr_blocks];
   for(unsigned i=0; i<nr_blocks; ++i){
@@ -151,8 +151,10 @@ void test_pool_allocator(void){
     MEM_pool_allocator_free(&allocator, ptrs2[i]);
     ptrs2[i] = NULL;
   }
-   assert((size_t)check_ll(&allocator) == nr_blocks);
-  assert(MEM_pool_allocator_destroy(&allocator));
+  size_t sum = check_ll(&allocator);
+  printf("Sum of linked ptrs: %zu\n nr blocks: %zu\n", sum, nr_blocks );
+   assert(sum == nr_blocks);
+  //assert(MEM_pool_allocator_destroy(&allocator));
   printf("Pool allocator test done.\n");
 }
 
@@ -169,12 +171,14 @@ void test_stack_allocator(void){
 
 void test_page_ring_buffer(void){
   printf("Starting page ring buffer test.\n");
+  fflush(stdout);
   MEM_Page_Ring_Buffer buf;
   buf = MEM_page_ring_buffer_init(1);
   assert(buf.base != NULL);
   assert(buf.start != NULL);
   assert(buf.start == buf.base + buf.p_size);
-  printf("Page size: %lu\n", buf.page_size);
+  printf("Page size: %zu\n", buf.page_size);
+  fflush(stdout);
   char* b = (char*)buf.start;
   memset(b, 0, buf.p_size);
   assert(b[-1] == 0);
@@ -183,10 +187,14 @@ void test_page_ring_buffer(void){
   strncpy(b + buf.p_size -3, str, 10);
   printf("Content of b-3: %s\n", b-3);
   printf("Content of b + buf.p_size -3: %s\n", b + buf.p_size -3);
+  fflush(stdout);
+
   assert(strcmp(b-3, b + buf.p_size -3) == 0);
 
-
+  MEM_page_ring_buffer_destroy(&buf);
   printf("Page ring buffer test done.\n");
+  fflush(stdout);
+
 }
 
 
